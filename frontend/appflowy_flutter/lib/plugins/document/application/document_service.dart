@@ -132,6 +132,26 @@ class DocumentService {
     );
   }
 
+  /// Delete a file from the cloud storage.
+  Future<FlowyResult<void, FlowyError>> deleteFile({
+    required String localFilePath,
+    required String url,
+  }) async {
+    final workspace = await FolderEventReadCurrentWorkspace().send();
+    return workspace.fold(
+      (l) async {
+        final payload = DownloadFilePB(
+          localFilePath: localFilePath,
+          url: url,
+        );
+        return DocumentEventDeleteFile(payload).send();
+      },
+      (r) async {
+        return FlowyResult.failure(FlowyError(msg: 'Workspace not found'));
+      },
+    );
+  }
+
   /// Download a file from the cloud storage.
   Future<FlowyResult<void, FlowyError>> downloadFile({
     required String url,

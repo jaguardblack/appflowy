@@ -72,6 +72,27 @@ Future<(String? path, String? errorMessage)> saveImageToCloudStorage(
   );
 }
 
+Future<(bool? isDeleted, String? errorMessage)>
+    deletePreviousImageFromCloudStorage(
+  String localImagePath,
+  String url,
+) async {
+  final documentService = DocumentService();
+  Log.debug("Deleting image local path: $localImagePath");
+  final result = await documentService.deleteFile(
+    localFilePath: localImagePath,
+    url: url,
+  );
+  return result.fold(
+    (s) async {
+      return (true, null);
+    },
+    (err) {
+      return (false, err.msg);
+    },
+  );
+}
+
 Future<List<ImageBlockData>> extractAndUploadImages(
   BuildContext context,
   List<String?> urls,
