@@ -31,6 +31,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:universal_platform/universal_platform.dart';
+import 'package:appflowy_backend/log.dart';
 
 const double kCoverHeight = 250.0;
 const double kIconHeight = 60.0;
@@ -223,6 +224,7 @@ class _DocumentCoverWidgetState extends State<DocumentCoverWidget> {
   }
 
   void _saveIconOrCover({(CoverType, String?)? cover, String? icon}) async {
+    Log.debug("Save Icon or Cover $cover");
     final transaction = widget.editorState.transaction;
     final coverType = widget.node.attributes[DocumentHeaderBlockKeys.coverType];
     final coverDetails =
@@ -687,8 +689,16 @@ class DocumentCoverState extends State<DocumentCover> {
       if (_isLocalMode()) {
         details = await saveImageToLocalStorage(details);
       } else {
+        Log.debug("Cover Details ${widget.coverDetails}");
+
+        // delete previous image if it is file
+        if (widget.coverType == CoverType.file) {
+          await deletePreviousImageFromCloudStorage("", widget.coverDetails!);
+        }
         // else we should save the image to cloud storage
         (details, _) = await saveImageToCloudStorage(details, widget.view.id);
+
+        // await deleteImageFromCloudStorage(localImagePath, url)
       }
     }
     widget.onChangeCover(type, details);
